@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="ja">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>MINIMUM EXAMPLE</dc:title>
+    <dc:language>ja</dc:language>
+    <dc:identifier id="BookId">urn:uuid:601d0b53-1e5f-4b38-814f-82cb7857e20a</dc:identifier>
+    <dc:creator id="aut-0">cu39</dc:creator>
+    <meta refines="#aut-0" property="role" scheme="marc:relators">aut</meta>
+    <meta property="dcterms:modified">2022-04-06T22:27:45Z</meta>
+  </metadata>
+  <manifest>
+    <item properties="nav" id="nav" href="nav.xhtml" media-type="application/xhtml+xml" />
+    <item properties="cover-image" id="cover" href="images/cover.jpg" media-type="image/jpeg" />
+    <item media-type="text/css" id="epub-css" href="style.css"/>
+    <item id="hello-epub-world-xhtml" href="hello-epub-world.xhtml" media-type="application/xhtml+xml" />
+    <item id="BIZUDGothic-Regular.ttf" href="fonts/BIZUDGothic-Regular.ttf" media-type="application/vnd.ms-opentype" />
+    <item id="BIZUDGothic-Bold.ttf" href="fonts/BIZUDGothic-Bold.ttf" media-type="application/vnd.ms-opentype" />
+    <item id="BIZUDMincho-Regular.ttf" href="fonts/BIZUDMincho-Regular.ttf" media-type="application/vnd.ms-opentype" />
+  </manifest>
+  <spine page-progression-direction="ltr">
+    <itemref idref="hello-epub-world-xhtml" />
+  </spine>
+</package>

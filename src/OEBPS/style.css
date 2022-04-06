@@ -1,0 +1,28 @@
+@font-face {
+  font-family: BIZUDMincho-Regular;
+  font-weight: normal;
+  font-style: normal;
+  src: url("fonts/BIZUDMincho-Regular.ttf");
+}
+
+@font-face {
+  font-family: BIZUDGothic-Regular;
+  font-weight: normal;
+  font-style: normal;
+  src: url("fonts/BIZUDGothic-Regular.ttf");
+}
+
+@font-face {
+  font-family: BIZUDGothic-Bold;
+  font-weight: bold;
+  font-style: bold;
+  src: url("fonts/BIZUDGothic-Bold.ttf");
+}
+
+body {
+  font-family: BIZUDMincho-Regular, serif;
+}
+
+h1 {
+  font-family: BIZUDGothic-Regular, sans-serif;
+}
