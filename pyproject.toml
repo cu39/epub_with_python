@@ -6,6 +6,7 @@ authors = ["cu39 <cu393uc@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+invoke = "^1.7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
