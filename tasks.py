@@ -14,6 +14,8 @@ IGNORE_FILES = (
 )
 CONFIG_FILE = 'config.yml'
 BUILD_DIR = 'temp'
+BOOK_DIR_NAME = 'OEBPS'
+BOOK_PATH = path.join(BUILD_DIR, BOOK_DIR_NAME)
 
 def load_yaml():
     with open(CONFIG_FILE) as conf:
@@ -71,7 +73,7 @@ def build(c):
                 'title': md.Meta['title'][0],
             }
             xhtml_src = tmpl_xhtml.render(xhtml_context)
-            xhtml_fn = path.join(BUILD_DIR, 'OEBPS', f'{md_withoutext}.xhtml')
+            xhtml_fn = path.join(BOOK_PATH, f'{md_withoutext}.xhtml')
         with open(xhtml_fn, 'w') as xhtmlf:
             xhtmlf.write(xhtml_src)
 
@@ -93,7 +95,7 @@ def build(c):
 
     # 必要なディレクトリを作成
     os.makedirs(path.join(BUILD_DIR, 'META-INF'))
-    os.makedirs(path.join(BUILD_DIR, 'OEBPS'))
+    os.makedirs(BOOK_PATH)
 
     # assets の固定ファイルをコピー
     shutil.copy(path.join('assets', 'mimetype'), BUILD_DIR)
@@ -108,7 +110,7 @@ def build(c):
     context = make_context()
 
     # OPFのテンプレートを作業ディレクトリへレンダリング
-    with open(path.join(BUILD_DIR, 'OEBPS', 'content.opf'), 'w') as f:
+    with open(path.join(BOOK_PATH, 'content.opf'), 'w') as f:
         f.write(tmpl_opf.render(context))
 
     tree = list(os.walk('src'))
@@ -116,7 +118,7 @@ def build(c):
     # src 直下のディレクトリはそのままコピー
     directories = tree[0][1]
     for d in directories:
-        shutil.copytree(path.join('src', d), path.join(BUILD_DIR, 'OEBPS', d))
+        shutil.copytree(path.join('src', d), path.join(BOOK_PATH, d))
 
     # Markdown オブジェクト作成
     md = Markdown(extensions=['meta'])
@@ -129,7 +131,7 @@ def build(c):
         fn, ext = os.path.splitext(f)
         # *.xhtml と *.css はそのままコピー
         if ext in ('.xhtml', '.css'):
-            shutil.copy(path.join('src', f), path.join(BUILD_DIR, 'OEBPS', f))
+            shutil.copy(path.join('src', f), path.join(BOOK_PATH, f))
         # *.md は XHTML に
         elif ext == '.md':
             md_paths = glob(path.join('src', '*.md'))
@@ -141,6 +143,6 @@ def build(c):
         zip.write(path.join(BUILD_DIR, 'mimetype'), 'mimetype', zf.ZIP_STORED, 0)
 
         meta_path = path.join(BUILD_DIR, 'META-INF')
-        book_path = path.join(BUILD_DIR, 'OEBPS')
+        book_path = path.join(BOOK_PATH)
         for dn in (meta_path, book_path):
             write_files(zip, dn)
