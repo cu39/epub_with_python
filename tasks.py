@@ -72,32 +72,33 @@ def build(c):
 
     config = load_yaml()
 
+    # 作業ディレクトリを削除
     if path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR)
+
+    # 必要なディレクトリを作成
     os.makedirs(path.join(BUILD_DIR, 'META-INF'))
     os.makedirs(path.join(BUILD_DIR, 'OEBPS'))
 
-    # templates をスキャン
-    # *.j2 のファイルはテンプレートとして temp へレンダリング
-    # その他拡張子ならそのまま temp へコピー
-    shutil.copy('templates/mimetype', BUILD_DIR)
-    shutil.copy('templates/META-INF/container.xml', path.join(BUILD_DIR, 'META-INF'))
+    # assets の固定ファイルをコピー
+    shutil.copy(path.join('assets', 'mimetype'), BUILD_DIR)
+    shutil.copy(path.join('assets', 'META-INF', 'container.xml'), path.join(BUILD_DIR, 'META-INF'))
+
+    # OPFのテンプレートを作業ディレクトリへレンダリング
     with open(path.join(BUILD_DIR, 'OEBPS', 'content.opf'), 'w') as f:
         f.write(jinja())
 
     tree = list(os.walk('src'))
 
+    # src 直下のディレクトリはそのままコピー
     directories = tree[0][1]
     for d in directories:
         shutil.copytree(path.join('src', d), path.join(BUILD_DIR, 'OEBPS', d))
-    
+
+    # src 直下のファイルは無視指定ファイルを除外してコピー
     files = tree[0][2]
     for f in list(set(files).difference(IGNORE_FILES)):
         shutil.copy(path.join('src', f), path.join(BUILD_DIR, 'OEBPS', f))
-
-    # src をスキャン
-    # *.md のファイルは XHTML へ変換して temp へ書き出し
-    # その他拡張子ならそのまま temp へコピー
 
     fn = config['epub_file_name']
     with zf.ZipFile(fn, 'w') as zip:
