@@ -1,0 +1,7 @@
+epub_file_name: example.epub
+book_title: EPUBサンプル
+book_id: urn:uuid:601d0b53-1e5f-4b38-814f-82cb7857e20a
+language: ja
+authors:
+  - cu39
+cover_image: 'images/cover.jpg'
