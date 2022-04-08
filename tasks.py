@@ -5,6 +5,7 @@ import shutil
 from glob import glob
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markdown import Markdown
 import zipfile as zf
 
 IGNORE_FILES = (
@@ -34,16 +35,21 @@ def image_paths():
 def font_paths():
     return file_paths(path.join('src', 'fonts'))
 
-def jinja():
+def make_context():
+    context = load_yaml()
+    images_without_cover = [
+        f for f in image_paths() if not f.endswith('cover.jpg')
+    ]
+    context['images'] = images_without_cover
+    context['fonts'] = font_paths()
+    return context
+
+def make_jinja_env(template_path):
     def dot_to_hyphen(filename):
         return filename.replace('.', '-')
 
-    context = load_yaml()
-    context['images'] = [f for f in image_paths() if not f.endswith('cover.jpg')]
-    context['fonts'] = font_paths()
-
     env = Environment(
-        loader=FileSystemLoader("templates"),
+        loader=FileSystemLoader(template_path),
         autoescape=select_autoescape()
     )
 
@@ -51,13 +57,24 @@ def jinja():
     env.filters['shift_path'] = shifted_path
     env.filters['dot_to_hyphen'] = dot_to_hyphen
 
-    # テンプレート読み込み
-    tmpl = env.get_template('OEBPS/content.opf.j2')
-
-    return tmpl.render(context)
+    return env
 
 @task
 def build(c):
+    def write_as_xhtml(md_path):
+        md_withoutext = path.splitext(shifted_path(md_path))[0]
+        with open(md_path, 'r') as mdf:
+            md_src = mdf.read()
+            md_body = md.convert(md_src)
+            xhtml_context = {
+                'markdown_body': md_body,
+                'title': md.Meta['title'][0],
+            }
+            xhtml_src = tmpl_xhtml.render(xhtml_context)
+            xhtml_fn = path.join(BUILD_DIR, 'OEBPS', f'{md_withoutext}.xhtml')
+        with open(xhtml_fn, 'w') as xhtmlf:
+            xhtmlf.write(xhtml_src)
+
     def write_files(zip, dn):
         with os.scandir(dn) as d:
             for entry in d:
@@ -70,7 +87,7 @@ def build(c):
                     print(f'Writing {entry.path}')
                     zip.write(entry.path, shifted_path(entry.path), zf.ZIP_DEFLATED, 9)
 
-    config = load_yaml()
+    context = make_context()
 
     # 作業ディレクトリを削除
     if path.exists(BUILD_DIR):
@@ -84,9 +101,14 @@ def build(c):
     shutil.copy(path.join('assets', 'mimetype'), BUILD_DIR)
     shutil.copy(path.join('assets', 'META-INF', 'container.xml'), path.join(BUILD_DIR, 'META-INF'))
 
+    env = make_jinja_env('templates')
+
+    # テンプレート読み込み
+    tmpl_opf = env.get_template('content.opf.j2')
+
     # OPFのテンプレートを作業ディレクトリへレンダリング
     with open(path.join(BUILD_DIR, 'OEBPS', 'content.opf'), 'w') as f:
-        f.write(jinja())
+        f.write(tmpl_opf.render(context))
 
     tree = list(os.walk('src'))
 
@@ -95,12 +117,25 @@ def build(c):
     for d in directories:
         shutil.copytree(path.join('src', d), path.join(BUILD_DIR, 'OEBPS', d))
 
-    # src 直下のファイルは無視指定ファイルを除外してコピー
-    files = tree[0][2]
-    for f in list(set(files).difference(IGNORE_FILES)):
-        shutil.copy(path.join('src', f), path.join(BUILD_DIR, 'OEBPS', f))
+    # Markdown オブジェクト作成
+    md = Markdown(extensions=['meta'])
+    # XHTML 用テンプレート作成
+    tmpl_xhtml = env.get_template('xhtml.j2')
+    # src 直下のファイルリストから無視指定ファイルを除外
+    all_files = tree[0][2]
+    files = list(set(all_files).difference(IGNORE_FILES))
+    for f in files:
+        fn, ext = os.path.splitext(f)
+        # *.xhtml と *.css はそのままコピー
+        if ext in ('.xhtml', '.css'):
+            shutil.copy(path.join('src', f), path.join(BUILD_DIR, 'OEBPS', f))
+        # *.md は XHTML に
+        elif ext == '.md':
+            md_paths = glob(path.join('src', '*.md'))
+            for md_path in md_paths:
+                write_as_xhtml(md_path)
 
-    fn = config['epub_file_name']
+    fn = context['epub_file_name']
     with zf.ZipFile(fn, 'w') as zip:
         zip.write(path.join(BUILD_DIR, 'mimetype'), 'mimetype', zf.ZIP_STORED, 0)
 
