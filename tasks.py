@@ -87,8 +87,6 @@ def build(c):
                     print(f'Writing {entry.path}')
                     zip.write(entry.path, shifted_path(entry.path), zf.ZIP_DEFLATED, 9)
 
-    context = make_context()
-
     # 作業ディレクトリを削除
     if path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR)
@@ -105,6 +103,9 @@ def build(c):
 
     # テンプレート読み込み
     tmpl_opf = env.get_template('content.opf.j2')
+
+    # 設定読み込み
+    context = make_context()
 
     # OPFのテンプレートを作業ディレクトリへレンダリング
     with open(path.join(BUILD_DIR, 'OEBPS', 'content.opf'), 'w') as f:
