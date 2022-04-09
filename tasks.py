@@ -69,9 +69,10 @@ def build(c):
         with open(md_path, 'r') as mdf:
             md_src = mdf.read()
             md_body = md.convert(md_src)
+            md_title = md.Meta['title'][0]  # md.convert() の後にする必要あり
             xhtml_context = {
                 'markdown_body': md_body,
-                'title': md.Meta['title'][0],
+                'title': md_title,
             }
             xhtml_src = tmpl_xhtml.render(xhtml_context)
             xhtml_fn = path.join(BOOK_PATH, f'{md_withoutext}.xhtml')
