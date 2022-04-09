@@ -17,6 +17,9 @@ TEMPLATE_PATH = 'templates'
 BUILD_DIR = 'temp'
 BOOK_DIR_NAME = 'OEBPS'
 BOOK_PATH = path.join(BUILD_DIR, BOOK_DIR_NAME)
+MD_EXTENSIONS = [
+    'meta',
+]
 
 def load_yaml():
     with open(CONFIG_FILE) as conf:
@@ -123,7 +126,7 @@ def build(c):
         shutil.copytree(path.join('src', d), path.join(BOOK_PATH, d))
 
     # Markdown オブジェクト作成
-    md = Markdown(extensions=['meta'])
+    md = Markdown(extensions=MD_EXTENSIONS)
     # XHTML 用テンプレート作成
     tmpl_xhtml = env.get_template('xhtml.j2')
     # src 直下のファイルリストから無視指定ファイルを除外
