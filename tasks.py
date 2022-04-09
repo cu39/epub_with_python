@@ -13,6 +13,7 @@ IGNORE_FILES = (
     'Thumbs.db'
 )
 CONFIG_FILE = 'config.yml'
+TEMPLATE_PATH = 'templates'
 BUILD_DIR = 'temp'
 BOOK_DIR_NAME = 'OEBPS'
 BOOK_PATH = path.join(BUILD_DIR, BOOK_DIR_NAME)
@@ -101,7 +102,7 @@ def build(c):
     shutil.copy(path.join('assets', 'mimetype'), BUILD_DIR)
     shutil.copy(path.join('assets', 'META-INF', 'container.xml'), path.join(BUILD_DIR, 'META-INF'))
 
-    env = make_jinja_env('templates')
+    env = make_jinja_env(TEMPLATE_PATH)
 
     # テンプレート読み込み
     tmpl_opf = env.get_template('content.opf.j2')
