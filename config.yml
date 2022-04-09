@@ -5,3 +5,6 @@ language: ja
 authors:
   - cu39
 cover_image: 'images/cover.jpg'
+order:
+  - hello-epub-world.md
+  - chapter-1.md

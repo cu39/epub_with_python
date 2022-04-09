@@ -4,6 +4,7 @@ from os import path
 import shutil
 from glob import glob
 import yaml
+import re
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markdown import Markdown
 import zipfile as zf
@@ -59,6 +60,12 @@ def make_context():
 def make_jinja_env(template_path):
     """Jinja2環境を作る
     """
+    def swap_ext(ext_from, ext_to, path_str):
+        return re.sub(f'(^.*)\.{ext_from}$', fr'\1.{ext_to}', path_str)
+
+    def md_ext_to_xhtml(path_str):
+        return swap_ext('md', 'xhtml', path_str)
+
     def dot_to_hyphen(filename):
         """Jinja2用ヘルパー関数
         ドットをハイフンへ全置換
@@ -72,6 +79,7 @@ def make_jinja_env(template_path):
 
     # テンプレート用ヘルパー関数を登録
     env.filters['shift_path'] = shifted_path
+    env.filters['md_ext_to_xhtml'] = md_ext_to_xhtml
     env.filters['dot_to_hyphen'] = dot_to_hyphen
 
     return env
@@ -142,21 +150,29 @@ def build(c):
 
     # Markdown オブジェクト作成
     md = Markdown(extensions=MD_EXTENSIONS)
+
     # XHTML 用テンプレート作成
     tmpl_xhtml = env.get_template('xhtml.j2')
+
     # src 直下のファイルリストから無視指定ファイルを除外
     all_files = tree[0][2]
     files = list(set(all_files).difference(IGNORE_FILES))
+
+    # *.xhtml と *.css はそのままコピー
     for f in files:
         fn, ext = os.path.splitext(f)
-        # *.xhtml と *.css はそのままコピー
         if ext in ('.xhtml', '.css'):
             shutil.copy(path.join('src', f), path.join(BOOK_PATH, f))
-        # *.md は XHTML に
+
+    # *.md は context.order を参照して XHTML に変換
+    for f in context['order']:
+        src_path = path.join('src', f)
+        assert os.path.isfile(src_path), f'\'{src_path}\'が存在しません。config.ymlとsrcディレクトリ内の対応を確認してください'
+        fn, ext = os.path.splitext(f)
+        if ext == '.xhtml':
+            shutil.copy(src_path, path.join(BOOK_PATH, f))
         elif ext == '.md':
-            md_paths = glob(path.join('src', '*.md'))
-            for md_path in md_paths:
-                write_as_xhtml(md_path)
+            write_as_xhtml(src_path)
 
     fn = context['epub_file_name']
     with zf.ZipFile(fn, 'w') as zip:

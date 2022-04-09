@@ -14,7 +14,9 @@
     <item properties="nav" id="nav" href="nav.xhtml" media-type="application/xhtml+xml" />
     <item properties="cover-image" id="{{ cover_image | shift_path | dot_to_hyphen }}" href="{{ cover_image }}" media-type="image/jpeg" />
     <item media-type="text/css" id="epub-css" href="style.css"/>
-    <item id="hello-epub-world-xhtml" href="hello-epub-world.xhtml" media-type="application/xhtml+xml" />
+    {% for md in order -%}
+    <item id="{{ md | md_ext_to_xhtml | dot_to_hyphen }}" href="{{ md | md_ext_to_xhtml }}" media-type="application/xhtml+xml" />
+    {% endfor -%}
     {% for image in images -%}
     <item id="{{ image | shift_path | dot_to_hyphen}}" href="{{ image }}" media-type="image/jpeg" />
     {% endfor -%}
@@ -23,6 +25,8 @@
     {% endfor -%}
   </manifest>
   <spine page-progression-direction="ltr">
-    <itemref idref="hello-epub-world-xhtml" />
+    {% for md in order -%}
+    <itemref idref="{{ md | md_ext_to_xhtml | dot_to_hyphen }}" />
+    {% endfor -%}
   </spine>
 </package>
