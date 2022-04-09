@@ -32,7 +32,7 @@ def shifted_path(path_str):
 def file_paths(dir_path):
     if not path.isdir(dir_path):
         return []
-    file_paths = glob(f'{dir_path}/*')
+    file_paths = glob(path.join(dir_path, '*'))
     return [shifted_path(file_path) for file_path in file_paths]
 
 def image_paths():
