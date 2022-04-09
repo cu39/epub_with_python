@@ -22,11 +22,15 @@ MD_EXTENSIONS = [
 ]
 
 def load_yaml():
+    """設定YAMLを読み込んで辞書を返す
+    """
     with open(CONFIG_FILE) as conf:
         config = yaml.safe_load(conf)
     return config
 
 def shifted_path(path_str):
+    """PATH文字列の最初の要素を削除して返す
+    """
     return path_str[(path_str.find(path.sep) + 1):]
 
 def file_paths(dir_path):
@@ -42,6 +46,8 @@ def font_paths():
     return file_paths(path.join('src', 'fonts'))
 
 def make_context():
+    """テンプレートへ渡すコンテキスト辞書を作る
+    """
     context = load_yaml()
     images_without_cover = [
         f for f in image_paths() if not f.endswith('cover.jpg')
@@ -51,7 +57,12 @@ def make_context():
     return context
 
 def make_jinja_env(template_path):
+    """Jinja2環境を作る
+    """
     def dot_to_hyphen(filename):
+        """Jinja2用ヘルパー関数
+        ドットをハイフンへ全置換
+        """
         return filename.replace('.', '-')
 
     env = Environment(
@@ -68,6 +79,8 @@ def make_jinja_env(template_path):
 @task
 def build(c):
     def write_as_xhtml(md_path):
+        """Markdownファイルを読み込んでHTMLに変換し作業ディレクトリに保存する
+        """
         md_withoutext = path.splitext(shifted_path(md_path))[0]
         with open(md_path, 'r') as mdf:
             md_src = mdf.read()
@@ -83,6 +96,8 @@ def build(c):
             xhtmlf.write(xhtml_src)
 
     def write_files(zip, dn):
+        """ディレクトリを走査してZIPファイルに書き込む
+        """
         with os.scandir(dn) as d:
             for entry in d:
                 if entry.is_dir():
