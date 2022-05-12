@@ -31,6 +31,9 @@ def load_yaml():
 
 def shifted_path(path_str):
     """PATH文字列の最初の要素を削除して返す
+
+    >>> shifted_path('foo/bar/baz')
+    'bar/baz'
     """
     return path_str[(path_str.find(path.sep) + 1):]
 
@@ -57,11 +60,19 @@ def make_context():
     context['fonts'] = font_paths()
     return context
 
+def swap_ext(ext_from, ext_to, path_str):
+    """PATH文字列の拡張子を置換する
+
+    >>> swap_ext('jpeg', 'jpg', 'test.jpeg')
+    'test.jpg'
+    >>> swap_ext('md', 'xhtml', 'foo/bar/baz.md')
+    'foo/bar/baz.xhtml'
+    """
+    return re.sub(f'(^.*)\.{ext_from}$', fr'\1.{ext_to}', path_str)
+
 def make_jinja_env(template_path):
     """Jinja2環境を作る
     """
-    def swap_ext(ext_from, ext_to, path_str):
-        return re.sub(f'(^.*)\.{ext_from}$', fr'\1.{ext_to}', path_str)
 
     def md_ext_to_xhtml(path_str):
         return swap_ext('md', 'xhtml', path_str)
@@ -182,3 +193,7 @@ def build(c):
         book_path = path.join(BOOK_PATH)
         for dn in (meta_path, book_path):
             write_files(zip, dn)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
