@@ -20,6 +20,7 @@ BOOK_DIR_NAME = 'OEBPS'
 BOOK_PATH = path.join(BUILD_DIR, BOOK_DIR_NAME)
 MD_EXTENSIONS = [
     'meta',
+    'footnotes',
 ]
 
 def load_yaml():
