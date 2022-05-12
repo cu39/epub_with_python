@@ -22,6 +22,7 @@ MD_EXTENSIONS = [
     'meta',
     'abbr',
     'footnotes',
+    'def_list',
 ]
 
 def load_yaml():
