@@ -52,7 +52,7 @@ def image_paths():
 def font_paths():
     return file_paths(path.join('src', 'fonts'))
 
-def make_context():
+def make_context(version='main'):
     """テンプレートへ渡すコンテキスト辞書を作る
     """
     context = load_yaml()
@@ -61,6 +61,8 @@ def make_context():
     ]
     context['images'] = images_without_cover
     context['fonts'] = font_paths()
+    context['contents'] = context['versions'][version]['contents']
+    context['cover_image'] = context['versions'][version]['cover_image']
     return context
 
 def swap_ext(ext_from, ext_to, path_str):
@@ -80,6 +82,18 @@ def make_jinja_env(template_path):
     def md_ext_to_xhtml(path_str):
         return swap_ext('md', 'xhtml', path_str)
 
+    def md_to_title(path_str):
+        """Markdownソースから（力技で）タイトルを取得
+        """
+        with open('src/' + path_str, 'r') as mdf:
+            md_src = mdf.read()
+            ptn = re.compile(r'^title: *(.*)$')
+            for ln in md_src.splitlines():
+                match = ptn.match(ln)
+                if match:
+                    return match.group(1)
+        return 'NO TITLE'
+
     def dot_to_hyphen(filename):
         """Jinja2用ヘルパー関数
         ドットをハイフンへ全置換
@@ -94,12 +108,13 @@ def make_jinja_env(template_path):
     # テンプレート用ヘルパー関数を登録
     env.filters['shift_path'] = shifted_path
     env.filters['md_ext_to_xhtml'] = md_ext_to_xhtml
+    env.filters['md_to_title'] = md_to_title
     env.filters['dot_to_hyphen'] = dot_to_hyphen
 
     return env
 
-@task
-def build(c):
+@task(optional=['version'])
+def build(c, version='main'):
     def write_as_xhtml(md_path):
         """Markdownファイルを読み込んでHTMLに変換し作業ディレクトリに保存する
         """
@@ -108,6 +123,7 @@ def build(c):
             md_src = mdf.read()
             md_body = md.convert(md_src)
             md_title = md.Meta['title'][0]  # md.convert() の後にする必要あり
+            md.reset()
             xhtml_context = {
                 'markdown_body': md_body,
                 'title': md_title,
@@ -143,17 +159,22 @@ def build(c):
     shutil.copy(path.join('assets', 'mimetype'), BUILD_DIR)
     shutil.copy(path.join('assets', 'META-INF', 'container.xml'), path.join(BUILD_DIR, 'META-INF'))
 
+    # 設定読み込み
+    context = make_context(version)
+
     env = make_jinja_env(TEMPLATE_PATH)
 
-    # テンプレート読み込み
+    # OPFテンプレート読み込み
     tmpl_opf = env.get_template('content.opf.j2')
-
-    # 設定読み込み
-    context = make_context()
-
-    # OPFのテンプレートを作業ディレクトリへレンダリング
+    # OPFテンプレートを作業ディレクトリへレンダリング
     with open(path.join(BOOK_PATH, 'content.opf'), 'w') as f:
         f.write(tmpl_opf.render(context))
+
+    # 目次テンプレート読み込み
+    tmpl_nav = env.get_template('nav.xhtml.j2')
+    # 目次テンプレートを作業ディレクトリへレンダリング
+    with open(path.join(BOOK_PATH, 'nav.xhtml'), 'w') as f:
+        f.write(tmpl_nav.render(context))
 
     tree = list(os.walk('src'))
 
@@ -178,8 +199,8 @@ def build(c):
         if ext in ('.xhtml', '.css'):
             shutil.copy(path.join('src', f), path.join(BOOK_PATH, f))
 
-    # *.md は context.order を参照して XHTML に変換
-    for f in context['order']:
+    # *.md は context.versions を参照して XHTML に変換
+    for f in context['versions'][version]['contents']:
         src_path = path.join('src', f)
         assert os.path.isfile(src_path), f'\'{src_path}\'が存在しません。config.ymlとsrcディレクトリ内の対応を確認してください'
         fn, ext = os.path.splitext(f)

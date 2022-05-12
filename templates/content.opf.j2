@@ -14,7 +14,7 @@
     <item properties="nav" id="nav" href="nav.xhtml" media-type="application/xhtml+xml" />
     <item properties="cover-image" id="{{ cover_image | shift_path | dot_to_hyphen }}" href="{{ cover_image }}" media-type="image/jpeg" />
     <item media-type="text/css" id="epub-css" href="style.css"/>
-    {% for md in order -%}
+    {% for md in contents -%}
     <item id="{{ md | md_ext_to_xhtml | dot_to_hyphen }}" href="{{ md | md_ext_to_xhtml }}" media-type="application/xhtml+xml" />
     {% endfor -%}
     {% for image in images -%}
@@ -25,7 +25,7 @@
     {% endfor -%}
   </manifest>
   <spine page-progression-direction="ltr">
-    {% for md in order -%}
+    {% for md in contents -%}
     <itemref idref="{{ md | md_ext_to_xhtml | dot_to_hyphen }}" />
     {% endfor -%}
   </spine>

@@ -8,8 +8,9 @@
   <body>
     <nav epub:type="toc">
       <ol>
-        <li><a href="hello-epub-world.xhtml">cover</a></li>
-        <li><a href="chapter-1.xhtml">Chapter 1</a></li>
+        {%- for md in contents %}
+        <li><a href="{{ md | md_ext_to_xhtml }}">{{ md | md_to_title }}</a></li>
+        {%- endfor %}
       </ol>
     </nav>
   </body>

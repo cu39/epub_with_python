@@ -4,7 +4,13 @@ book_id: urn:uuid:601d0b53-1e5f-4b38-814f-82cb7857e20a
 language: ja
 authors:
   - cu39
-cover_image: 'images/cover.jpg'
-order:
-  - hello-epub-world.md
-  - chapter-1.md
+versions:
+  main:
+    cover_image: 'images/cover.jpg'
+    contents:
+      - hello-epub-world.md
+      - chapter-1.md
+  trial:
+    cover_image: 'images/cover.jpg'
+    contents:
+      - hello-epub-world.md
