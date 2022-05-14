@@ -113,6 +113,15 @@ def make_jinja_env(template_path):
 
     return env
 
+def append_version_suffix(fn, ver_suffix):
+    """ファイル名にバージョン文字列を追加する
+
+    >>> append_version_suffix('example.epub', 'trial')
+    'example-trial.epub'
+    """
+    base, ext = path.splitext(fn)
+    return f'{base}-{ver_suffix}{ext}'
+
 @task(optional=['version'])
 def build(c, version='main'):
     def write_as_xhtml(md_path):
@@ -209,7 +218,13 @@ def build(c, version='main'):
         elif ext == '.md':
             write_as_xhtml(src_path)
 
+    # 出力EPUBファイル名
     fn = context['epub_file_name']
+    # バージョンがmainでない場合はバージョン文字列を足す
+    if version != 'main':
+        fn = append_version_suffix(fn, version)
+
+    # EPUBファイル書き込み
     with zf.ZipFile(fn, 'w') as zip:
         zip.write(path.join(BUILD_DIR, 'mimetype'), 'mimetype', zf.ZIP_STORED, 0)
 
